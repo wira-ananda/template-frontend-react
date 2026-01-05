@@ -32,20 +32,7 @@ function ProtectedLayout() {
 export default function App() {
   return (
     <Routes>
-      {/* Halaman publik */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-
-      {/* Halaman privat */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<ProtectedLayout />}>
-          <Route path="/" element={<HomePage />} />
-          {/* Tambahkan lebih banyak route private di sini jika perlu */}
-        </Route>
-      </Route>
-
-      {/* Fallback ke login jika route tidak cocok */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<HomePage />} />
     </Routes>
   );
 }
