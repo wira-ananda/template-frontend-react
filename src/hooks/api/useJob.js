@@ -29,3 +29,20 @@ export const usePostAppliance = () => {
     onError: errorMiddleware,
   });
 };
+
+export const useUpdateAppliance = () => {
+  return useMutation({
+    mutationFn: async ({ applianceId, applianceData }) => {
+      const { data } = await axiosInstance.patch(
+        `/${applianceId}`,
+        applianceData
+      );
+      return data;
+    },
+
+    onSuccess: () => {
+      message.success("success!");
+    },
+    onError: errorMiddleware,
+  });
+};

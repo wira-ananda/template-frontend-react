@@ -11,14 +11,22 @@ import {
   Input,
   Spin,
 } from "antd";
-import { useGetAllAppliance, usePostAppliance } from "../../hooks/api/useJob";
+import {
+  useGetAllAppliance,
+  usePostAppliance,
+  useUpdateAppliance,
+} from "../../hooks/api/useJob";
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
 
-// ---------- Job Modal ----------
-const JobModal = ({ open, onCancel, onSubmit }) => {
+const JobModal = ({ open, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
+
+  // set initial values saat modal dibuka
+  React.useEffect(() => {
+    form.setFieldsValue(initialValues || {});
+  }, [initialValues, form]);
 
   const handleOk = async () => {
     const values = await form.validateFields();
@@ -28,7 +36,7 @@ const JobModal = ({ open, onCancel, onSubmit }) => {
 
   return (
     <Modal
-      title="Tambah Lamaran"
+      title={initialValues ? "Edit Lamaran" : "Tambah Lamaran"}
       open={open}
       onCancel={onCancel}
       onOk={handleOk}
@@ -88,20 +96,31 @@ const JobModal = ({ open, onCancel, onSubmit }) => {
   );
 };
 
-// ---------- Main Component ----------
 export default function HomePage() {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
   const [open, setOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
 
   const { data: jobs, isLoading, isError } = useGetAllAppliance();
   const postJob = usePostAppliance();
+  const updateJob = useUpdateAppliance();
 
   const handleSubmit = (data) => {
-    postJob.mutate(data);
+    if (editingJob) {
+      updateJob.mutate({ jobId: editingJob._id, jobData: data });
+    } else {
+      postJob.mutate(data);
+    }
     setOpen(false);
+    setEditingJob(null);
+  };
+
+  const handleEdit = (job) => {
+    setEditingJob(job);
+    setOpen(true);
   };
 
   return (
@@ -145,8 +164,12 @@ export default function HomePage() {
         >
           <JobModal
             open={open}
-            onCancel={() => setOpen(false)}
+            onCancel={() => {
+              setOpen(false);
+              setEditingJob(null);
+            }}
             onSubmit={handleSubmit}
+            initialValues={editingJob}
           />
 
           <Button type="primary" onClick={() => setOpen(true)}>
@@ -185,6 +208,9 @@ export default function HomePage() {
                   <p>
                     <strong>Note:</strong> {job.note}
                   </p>
+                  <Button type="link" onClick={() => handleEdit(job)}>
+                    Edit
+                  </Button>
                 </div>
               ))}
           </div>
